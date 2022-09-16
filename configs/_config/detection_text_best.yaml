@@ -1,0 +1,70 @@
+MODEL:
+  META_ARCHITECTURE: "GeneralizedRCNN"
+  # WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
+  WEIGHTS: "mishu_detectron2/model/model_detection_diagnosisbest.pth"
+  BACKBONE:
+    NAME: "build_resnet_fpn_backbone"
+  RESNETS:
+    DEPTH: 50
+  RESNETS:
+    OUT_FEATURES: ["res2", "res3", "res4", "res5"]
+    # RES5_DILATION: 2
+  FPN:
+    IN_FEATURES: ["res2", "res3", "res4", "res5"]
+  ANCHOR_GENERATOR:
+    NAME: "RotatedAnchorGenerator"
+    SIZES: [[8], [16], [32], [128], [256]]  # One size for each in feature map
+    # ASPECT_RATIOS: [[0.5, 2.0, 4.0]]  # Three aspect ratios (same for all in feature maps)
+    # ASPECT_RATIOS: [[0.45, 0.15, 0.05, 0.02]]
+    ASPECT_RATIOS: [[0.4, 0.2, 0.1, 0.04]]
+    # ANGLES: [[-165, -150, -135, -120, -105, -90, -75, -60, -45, -30, -15, 0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180]]
+    ANGLES: [[ -5, 0, 5]]
+    # ANGLES: [[-175, -95, -90, -85, -5, 0, 5, 85, 90, 95, 175, 180]]
+    #attention 85,84,only this time 85
+  PROPOSAL_GENERATOR:
+    NAME: "RRPN"
+  RPN:
+    IN_FEATURES: ["p2", "p3", "p4", "p5", "p6"]
+    PRE_NMS_TOPK_TRAIN: 6000  # Per FPN level
+    PRE_NMS_TOPK_TEST: 6000  # Per FPN level
+    POST_NMS_TOPK_TRAIN: 2000
+    POST_NMS_TOPK_TEST: 2000
+    BBOX_REG_WEIGHTS: (1, 1, 1, 1, 1)
+  ROI_HEADS:
+    NAME: "RROIHeads"
+    IN_FEATURES: ["p2", "p3", "p4", "p5"]
+    # CLASSNAMES: ['seal', 'seal1']
+    # CLASSNAMES: ['text']
+    NUM_CLASSES: 1
+    # CLASSNAMES: ['page', 'text', 'text0_v', 'text0', 'text_hw', 'text_v', 'seal', 'seal1', 'barcode', 'qrcode']
+    SCORE_THRESH_TEST: 0.3
+    NMS_THRESH_TEST: 0.1
+  ROI_BOX_HEAD:
+    POOLER_TYPE: ROIAlignRotated
+    NAME: "FastRCNNConvFCHead"
+    BBOX_REG_WEIGHTS: (10, 10, 5, 5, 2)
+    NUM_FC: 2
+    SMOOTH_L1_BETA: 0.5
+    POOLER_RESOLUTION: 7
+    # POOL_FACTOR: 4  #define by self default 1
+    # POST_PROCESS: True
+DATASETS:
+  TRAIN: ("xml",)
+  TEST: ("xml",)
+SOLVER:
+  IMS_PER_BATCH: 4
+  BASE_LR: 0.0001
+  STEPS: (30000, 40000)
+  MAX_ITER: 50000
+DATALOADER:
+  NUM_WORKERS: 0
+INPUT:
+  MIN_SIZE_TRAIN: (600, 800)
+  MIN_SIZE_TEST: 800
+  MIN_SIZE_TRAIN_SAMPLING: range
+TEST:
+  DETECTIONS_PER_IMAGE: 600
+OUTPUT_DIR: page_aug/
+VERSION: 2
+
+
