@@ -163,14 +163,14 @@ def get_sample_inputs(args):
         original_image = detection_utils.read_image(args.sample_image, format=cfg.INPUT.FORMAT)
         # Do same preprocessing as DefaultPredictor
         aug = T.ResizeShortestEdge(
-            [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
+            # [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
+            [1344, 1344], 1344
         )
         height, width = original_image.shape[:2]
         image = aug.get_transform(original_image).apply_image(original_image)
         image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
         inputs = {"image": image, "height": height, "width": width}
-
         # Sample ready
         sample_inputs = [inputs]
         return sample_inputs
@@ -182,18 +182,18 @@ if __name__ == "__main__":
         "--format",
         choices=["caffe2", "onnx", "torchscript"],
         help="output format",
-        default="torchscript",
+        default="onnx",
     )
     parser.add_argument(
         "--export-method",
         choices=["caffe2_tracing", "tracing", "scripting"],
         help="Method to export models",
-        default="tracing",
+        default="caffe2_tracing",
     )
-    parser.add_argument("--config-file", default="", metavar="FILE", help="path to config file")
-    parser.add_argument("--sample-image", default=None, type=str, help="sample image for input")
+    parser.add_argument("--config-file", default="configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml", metavar="FILE", help="path to config file")
+    parser.add_argument("--sample-image", default="sample.jpg", type=str, help="sample image for input")
     parser.add_argument("--run-eval", action="store_true")
-    parser.add_argument("--output", help="output directory for the converted model")
+    parser.add_argument("--output", default="output", help="output directory for the converted model")
     parser.add_argument(
         "opts",
         help="Modify config options using the command-line",
